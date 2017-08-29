@@ -1,4 +1,6 @@
+require 'redis'
 require "redis_lock/version"
+require "redis_lock/config"
 
 class RedisLock
   attr_reader :key
@@ -7,11 +9,11 @@ class RedisLock
     @config ||= Config.new
   end
 
-  def self.setup(&block)
+  def self.setup
     yield config
   end
 
-  delegate :config, to: :class
+  def config; self.class.config; end
 
   def initialize(key, opts = {})
     @key = key

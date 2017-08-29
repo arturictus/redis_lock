@@ -1,8 +1,7 @@
 # RedisLock
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/redis_lock`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Do not allow anyone to perfor de same operation while this is running.
+Do not perform this operation unless the previous was executed in more than 5 minutes ago.
 
 ## Installation
 
@@ -33,14 +32,36 @@ end
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+lock = RedisLock.new('my_key')
+
+lock.locked? #=> false
+# Add 20 secs time to live (TTL)
+lock.set(20) #=> true
+lock.locked? #=> true
+lock.remove #=> true
+lock.locked? #=> false
+```
+
+```ruby
+lock = RedisLock.new('my_key')
+out = subject.perform do
+        #no one can perform the same operation while this is running
+        {}.tap do |t|
+          t[:locked?] = subject.locked?
+        end
+      end
+out[:locked?] #=> true
+# once the block has finished releases the lock
+lock.locked? #=> false
+```
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/redis_lock.
+Bug reports and pull requests are welcome on GitHub at https://github.com/arturictus/redis_lock.

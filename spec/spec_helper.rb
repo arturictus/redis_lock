@@ -16,6 +16,15 @@
 # users commonly want.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+require 'redis_lock'
+require 'contextuable'
+RedisLock.setup do |config|
+  config.redis = { host: '127.0.0.1',
+                   port: 6379,
+                   db: 2 }
+end
+
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

@@ -5,7 +5,7 @@ class RedisLock
     end
 
     def redis
-      raise "[RedisLock::Config] redis connection is not set" unless @redis
+      fail "[RedisLock::Config] redis connection setup is not set" unless @redis
       @redis
     end
 
@@ -14,7 +14,7 @@ class RedisLock
     end
 
     def logger
-      @logger
+      @logger ? @logger : Logger.new(STDOUT)
     end
   end
 end

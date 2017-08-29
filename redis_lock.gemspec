@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Lock with redis}
   spec.description   = %q{Lock with redis}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/arturictus/redis_lock.git"
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
