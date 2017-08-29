@@ -1,7 +1,8 @@
 # RedisLock
+**use cases:**
 
-Do not allow anyone to perfor de same operation while this is running.
-Do not perform this operation unless the previous was executed in more than 5 minutes ago.
+- Do not allow anyone to perform de same operation while this is running.
+- Do not perform this operation unless the previous was executed in more than 5 minutes ago.
 
 ## Installation
 
