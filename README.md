@@ -43,10 +43,10 @@ lock.locked? #=> true
 lock.remove #=> true
 lock.locked? #=> false
 ```
-
+_as Mutex_
 ```ruby
 lock = RedisLock.new('my_key')
-out = subject.perform do
+out = lock.perform do
         #no one can perform the same operation while this is running
         {}.tap do |t|
           t[:locked?] = subject.locked?
