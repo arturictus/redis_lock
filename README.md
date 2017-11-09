@@ -43,7 +43,7 @@ lock.locked? #=> true
 lock.remove #=> true
 lock.locked? #=> false
 ```
-_as Mutex_
+__as Mutex__
 ```ruby
 lock = RedisLock.new('my_key')
 out = lock.perform do
@@ -57,6 +57,14 @@ out[:locked?] #=> true
 lock.locked? #=> false
 ```
 
+__having already a connection:_ example: Sidekiq
+
+```ruby
+Sidekiq.redis do |connection|
+  lock = RedisLock.new('my_key', redis: connection)
+  # do something
+end
+```
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
