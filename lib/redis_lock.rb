@@ -1,12 +1,12 @@
 require 'redis'
 require "redis_lock/version"
-require "redis_lock/config"
+require "redis_lock/configuration"
 
 class RedisLock
   attr_reader :key
 
   def self.config
-    @config ||= Config.new
+    @config ||= Configuration.new
   end
 
   def self.setup
@@ -21,7 +21,7 @@ class RedisLock
   end
 
   def redis
-    @redis ||= Redis.new(config.redis)
+    @redis ||= config.redis
   end
 
   def set(expiration_time = 600)

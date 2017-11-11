@@ -19,10 +19,10 @@
 
 require 'redis_lock'
 require 'contextuable'
+require 'mock_redis'
+
 RedisLock.setup do |config|
-  config.redis = { host: '127.0.0.1',
-                   port: 6379,
-                   db: 2 }
+  config.redis = -> { MockRedis.new }
 end
 
 RSpec.configure do |config|

@@ -22,11 +22,52 @@ Or install it yourself as:
 
 ## Setup
 
+This setup it's optional in any instance of `RedisLock` you can provide an optional
+argument `:redis`.
+But if you do not want to provided it in all the instances is a good shortcut to
+set it here.
+
 ```ruby
 RedisLock.setup do |config|
+  # redis
+  # Accepts `block` or `Hash`
+  #
+  # In test configuration like your `spec_helper`
+  # recommend `mock_redis` gem
+  # example:
+  #    config.redis = -> { MockRedis.new }
+  #
+  # When using Sidekiq
+  # example:    
+  #    config.redis = -> { Sidekiq.redis{ |r| r } }
+  #
+  # In `Rails`
+  # example:
+  #     config.redis = -> do
+  #       if Rails.env.test?
+  #         MockRedis.new
+  #       elsif Rails.env.development?
+  #         { host: '127.0.0.1', port: 6379 }
+  #       else
+  #         Sidekiq.redis{ |r| r }
+  #       end
+  #     end
   config.redis = { host: '127.0.0.1'
                    port: 6379
                    db: 2 }
+  # logger
+  # default: Logger.new(STDOUT)
+  config.logger = Rails.logger
+end
+```
+
+example:
+
+in my `spec_helper`
+
+```ruby
+RedisLock.setup do |config|
+  config.redis = -> { MockRedis.new }
   config.logger = Rails.logger
 end
 ```
