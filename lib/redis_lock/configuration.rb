@@ -1,3 +1,4 @@
+require 'logger'
 class RedisLock
   class Configuration
     class RedisNotSet < StandardError; end

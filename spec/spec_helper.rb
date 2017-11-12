@@ -18,7 +18,7 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'redis_lock'
-require 'contextuable'
+require 'dystruct'
 require 'mock_redis'
 
 RedisLock.setup do |config|

@@ -24,43 +24,62 @@ class RedisLock
     @redis ||= config.redis
   end
 
-  def set(expiration_time = 600)
+  # Redis SET options:
+  # - EX seconds -- Set the specified expire time, in seconds.
+  # - PX milliseconds -- Set the specified expire time, in milliseconds.
+  # - NX -- Only set the key if it does not already exist.
+  # - XX -- Only set the key if it already exist.
+  def set(expiration_time = 60, opts = {})
+    args = {
+             ex: expiration_time, # expires in X seconds
+             nx: true # only if it does not exists
+           }.merge(opts)
     redis.set(
       key,
       Time.now.strftime('%FT%T'),
-      ex: expiration_time, # expires in X seconds
-      nx: true # only if it does not exists
+      args
     )
   end
 
-  def perform(args = {}, &block)
+  def if_open(args = {}, &block)
     return if locked?
-    expiration = args[:expiration] || args[:ex] || 600
-    set(expiration)
-    # If error occurs, we remove the lock
-    out = _perform(&block)
-    remove
-    out
+    _perform(&block)
+  end
+  alias_method :perform, :if_open
+
+  def if_locked(args = {}, &block)
+    return if open?
+    _perform(&block)
   end
 
-
-
   def locked?
-    redis.ttl(key) == -2 ? false : true
+    ttl == -2 ? false : true
   end
   alias_method :exists?, :locked?
 
-  def remove
+  def ttl
+    redis.ttl(key)
+  end
+
+  def open?
+    !locked?
+  end
+  alias_method :unlocked?, :open?
+
+  def delete
     redis.del(key) == 1 ? true : false
   end
+  alias_method :unlock!, :delete
+  alias_method :open!, :delete
+  alias_method :remove, :delete
 
   private
 
   def _perform(&block)
     yield self
   rescue => e
-    config.logger.error "[RedisLock] key: `#{key}` error:"
+    config.logger.error "[#{self.class}] key: `#{key}` error:"
     config.logger.error e
-    false
+    raise e
   end
 end

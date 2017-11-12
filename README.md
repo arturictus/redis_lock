@@ -24,13 +24,13 @@ Or install it yourself as:
 
 This setup it's optional in any instance of `RedisLock` you can provide an optional
 argument `:redis`.
-But if you do not want to provided it in all the instances is a good shortcut to
+But if you do not want to provide it in all the instances is a good shortcut to
 set it here.
 
 ```ruby
 RedisLock.setup do |config|
   # redis
-  # Accepts `block` or `Hash`
+  # Accepts `block` (or something responding to `#call`) or `Hash`
   #
   # In test configuration like your `spec_helper`
   # recommend `mock_redis` gem
@@ -57,17 +57,6 @@ RedisLock.setup do |config|
                    db: 2 }
   # logger
   # default: Logger.new(STDOUT)
-  config.logger = Rails.logger
-end
-```
-
-example:
-
-in my `spec_helper`
-
-```ruby
-RedisLock.setup do |config|
-  config.redis = -> { MockRedis.new }
   config.logger = Rails.logger
 end
 ```
