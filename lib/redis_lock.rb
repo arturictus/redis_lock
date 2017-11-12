@@ -36,8 +36,7 @@ class RedisLock
            else
              { ex: expiration_time }
            end
-    args.merge(opts)
-    redis.set(key, value, args)
+    redis.set(key, value, args.merge(opts)) == "OK" ? true : false
   end
 
   def if_open(args = {}, &block)
