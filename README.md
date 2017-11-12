@@ -102,15 +102,16 @@ end
 
 ## Methods:
 
-__set__
+### set
+
 Will store the key to redis with a ttl (time to live).
 args:
-  - ttl # default: 60
-  - opts # default: {}
-    * value (String) - default: time now
-    * px (true) - miliseconds instead of seconds default: false
-    * nk (true) - Only set the key if it does not already exist.
-    * xx (true) - Only set the key if it already exist.
+  - __ttl__ | default: 60
+  - __opts__ | default: {}
+    * __value__ (String) - default: time now
+    * __px__  - miliseconds instead of seconds | default: false
+    * __nk__  - Only set the key if it does not already exist. | default: false
+    * __xx__  - Only set the key if it already exist. | default: false
 ```ruby
 lock = RedisLock.new('my_key')
 
@@ -119,7 +120,7 @@ lock.ttl #=> 60
 lock.open? # => false
 ```
 
-_with options_
+__with options:__
 
 ```ruby
 lock = RedisLock.new('my_key')
@@ -131,16 +132,17 @@ lock.open? # => false
 ```
 
 Redis documentation: https://redis.io/commands/set
-
+```
 Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type. Any previous time to live associated with the key is discarded on successful SET operation.
 
 EX seconds -- Set the specified expire time, in seconds.
 PX milliseconds -- Set the specified expire time, in milliseconds.
 NX -- Only set the key if it does not already exist.
 XX -- Only set the key if it already exist.
+```
 
+### locked?
 
-__locked?__
 Returns `true` if lock is set
 
 ```ruby
@@ -152,7 +154,8 @@ lock.locked? # => false
 ```
 _alias method:_ `exists?`
 
-__open?__
+### open?
+
 Returns `true` if NO lock is set
 
 ```ruby
@@ -163,7 +166,8 @@ lock.open? # => false
 ```
 _alias method:_ `unlocked?`
 
-__delete__
+### delete
+
 Removes the key from the Redis store
 
 ```ruby
@@ -175,7 +179,8 @@ lock.locked? # => false
 ```
 _alias methods:_ `unlock!`,`open!`
 
-__value__
+### value
+
 Returns the value stored in redis
 
 ```ruby
@@ -183,7 +188,8 @@ lock = RedisLock.new('my_key')
 lock.set(60, value: 'hi there!')
 lock.value # => 'hi there!'
 ```
-__ttl__
+### ttl
+
 Returns the pending ttl (time to live)
 
 ```ruby
