@@ -30,15 +30,14 @@ class RedisLock
   # - NX -- Only set the key if it does not already exist.
   # - XX -- Only set the key if it already exist.
   def set(expiration_time = 60, opts = {})
-    args = {
-             ex: expiration_time, # expires in X seconds
-             nx: true # only if it does not exists
-           }.merge(opts)
-    redis.set(
-      key,
-      Time.now.strftime('%FT%T'),
-      args
-    )
+    value = opts.delete(:value) || Time.now.strftime('%FT%T')
+    args = if opts[:px]
+             { px: expiration_time }
+           else
+             { ex: expiration_time }
+           end
+    args.merge(opts)
+    redis.set(key, value, args)
   end
 
   def if_open(args = {}, &block)
@@ -72,6 +71,10 @@ class RedisLock
   alias_method :unlock!, :delete
   alias_method :open!, :delete
   alias_method :remove, :delete
+
+  def value
+    redis.get(key)
+  end
 
   private
 

@@ -86,4 +86,13 @@ describe RedisLock do
       expect(subject.locked?).to be true
     end
   end
+
+  describe 'value' do
+    it do
+      lock = RedisLock.new('my_value')
+      lock.set(60, value: 'hi there!')
+      expect(lock.value).to eq 'hi there!'
+      lock.delete
+    end
+  end
 end

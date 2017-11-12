@@ -76,18 +76,125 @@ lock.locked? #=> false
 __as Mutex__
 ```ruby
 lock = RedisLock.new('my_key')
-out = lock.perform do
-        #no one can perform the same operation while this is running
-        {}.tap do |t|
-          t[:locked?] = subject.locked?
-        end
+out = lock.if_open do |l|
+        # no one can perform the same operation while this is running
+        l.set(30) # place the lock so no one else can perform this tasks
+        sleep 3 # Do something
+        l.unlock! # release the lock
+        :hello
       end
-out[:locked?] #=> true
-# once the block has finished releases the lock
+out #=> :hello
 lock.locked? #=> false
 ```
 
-__having already a connection:_ example: Sidekiq
+__blocking for a time__
+
+Send email to user. The User should receive only 1 email per day
+
+```ruby
+ttl = (24 * 3600) # one day
+lock = RedisLock.new("User:1-sales-products")
+lock.if_open do |l|
+  # Send Email
+  l.set(ttl)
+end
+```
+
+## Methods:
+
+__set__
+Will store the key to redis with a ttl (time to live).
+args:
+  - ttl # default: 60
+  - opts # default: {}
+    * value (String) - default: time now
+    * px (true) - miliseconds instead of seconds default: false
+    * nk (true) - Only set the key if it does not already exist.
+    * xx (true) - Only set the key if it already exist.
+```ruby
+lock = RedisLock.new('my_key')
+
+lock.set(60)
+lock.ttl #=> 60
+lock.open? # => false
+```
+
+_with options_
+
+```ruby
+lock = RedisLock.new('my_key')
+
+lock.set(60, nx: true) # only if the key does not exists
+# => true (key has been stored)
+lock.ttl #=> 60
+lock.open? # => false
+```
+
+Redis documentation: https://redis.io/commands/set
+
+Set key to hold the string value. If key already holds a value, it is overwritten, regardless of its type. Any previous time to live associated with the key is discarded on successful SET operation.
+
+EX seconds -- Set the specified expire time, in seconds.
+PX milliseconds -- Set the specified expire time, in milliseconds.
+NX -- Only set the key if it does not already exist.
+XX -- Only set the key if it already exist.
+
+
+__locked?__
+Returns `true` if lock is set
+
+```ruby
+lock = RedisLock.new('my_key')
+lock.set(60) # => true (key has been stored)
+lock.locked? # => true
+lock.remove
+lock.locked? # => false
+```
+_alias method:_ `exists?`
+
+__open?__
+Returns `true` if NO lock is set
+
+```ruby
+lock = RedisLock.new('my_key')
+lock.open? # => true
+lock.set(60) # => true (key has been stored)
+lock.open? # => false
+```
+_alias method:_ `unlocked?`
+
+__delete__
+Removes the key from the Redis store
+
+```ruby
+lock = RedisLock.new('my_key')
+lock.set(60) # => true (key has been stored)
+lock.locked? # => true
+lock.delete
+lock.locked? # => false
+```
+_alias methods:_ `unlock!`,`open!`
+
+__value__
+Returns the value stored in redis
+
+```ruby
+lock = RedisLock.new('my_key')
+lock.set(60, value: 'hi there!')
+lock.value # => 'hi there!'
+```
+__ttl__
+Returns the pending ttl (time to live)
+
+```ruby
+lock = RedisLock.new('my_key')
+lock.set(60)
+lock.ttl # => 60
+sleep 10
+lock.ttl # => 50
+```
+
+__having already a connection:__ _example: Sidekiq_
 
 ```ruby
 Sidekiq.redis do |connection|
