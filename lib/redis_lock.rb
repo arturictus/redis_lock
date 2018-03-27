@@ -13,10 +13,22 @@ class RedisLock
     yield config
   end
 
+  def self.semaphore(key, args = {}, &block)
+    setup_instance(key, args).semaphore(args, &block)
+  end
+
+  def self.if_open(key, args = {}, &block)
+    setup_instance(key, args).if_open(args, &block)
+  end
+
+  def self.if_locked(key, args = {}, &block)
+    setup_instance(key, args).if_locked(args, &block)
+  end
+
   def config; self.class.config; end
 
   def initialize(key, opts = {})
-    @key = key
+    @key = "REDISLOCK::#{key}"
     @redis = opts[:redis]
   end
 
@@ -39,6 +51,18 @@ class RedisLock
     redis.set(key, value, args.merge(opts)) == "OK" ? true : false
   end
 
+  def semaphore(args = {}, &block)
+    ttl = args[:ttl] || config.default_ttl
+    set_opts = args[:set_opts] || {}
+    while locked?
+      sleep (args[:wait] || 3)
+    end
+    set(ttl, set_opts)
+    out = _perform(&block)
+    unlock!
+    out
+  end
+
   def if_open(args = {}, &block)
     return if locked?
     _perform(&block)
@@ -54,6 +78,7 @@ class RedisLock
     ttl == -2 ? false : true
   end
   alias_method :exists?, :locked?
+  alias_method :in_use?, :locked?
 
   def ttl
     redis.ttl(key)
@@ -76,6 +101,11 @@ class RedisLock
   end
 
   private
+
+  def self.setup_instance(key, args)
+    inst_opts = { redis: args.delete(:redis) }.reject{ |_, v| v.nil? }
+    new(key, inst_opts)
+  end
 
   def _perform(&block)
     yield self

@@ -58,6 +58,11 @@ RedisLock.setup do |config|
   # logger
   # default: Logger.new(STDOUT)
   config.logger = Rails.logger
+
+  # Default ttl for all your locks
+  # default: 60
+  #
+  # config.default_ttl = 120
 end
 ```
 
@@ -73,28 +78,37 @@ lock.locked? #=> true
 lock.remove #=> true
 lock.locked? #=> false
 ```
-__as Mutex__
+
+
+__semaphore:__
+No one can perform the same operation while this is running the rest of the processes
+are waiting while the lock is in use, When lock is released another one takes the lock.
+
+args:
+  - key [string]
+  - opts: `{}`
+    * :redis
+    * :ttl, time to leave
+    * :set_opts, check `set` documentation
+    * :wait, time waiting for the next check if the lock is in use
+
 ```ruby
-lock = RedisLock.new('my_key')
-out = lock.if_open do |l|
-        # no one can perform the same operation while this is running
-        l.set(30) # place the lock so no one else can perform this tasks
+out = RedisLock.semaphore('my_key') do |l|
         sleep 3 # Do something
-        l.unlock! # release the lock
         :hello
       end
 out #=> :hello
-lock.locked? #=> false
+RedisLock.new('my_key').locked? #=> false
 ```
 
-__blocking for a time__
+__if_open:__
 
+**Use case:**
 Send email to user. The User should receive only 1 email per day
 
 ```ruby
 ttl = (24 * 3600) # one day
-lock = RedisLock.new("User:1-sales-products")
-lock.if_open do |l|
+RedisLock.if_open("User:1-sales-products", ttl: ttl) do |l|
   # Send Email
   l.set(ttl)
 end

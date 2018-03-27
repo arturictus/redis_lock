@@ -22,7 +22,15 @@ class RedisLock
     end
 
     def logger
-      @logger ? @logger : Logger.new(STDOUT)
+      @logger || Logger.new(STDOUT)
+    end
+
+    def default_ttl=(val)
+      @default_ttl = val
+    end
+
+    def default_ttl
+      @default_ttl || 60
     end
 
     private

@@ -12,6 +12,50 @@ describe RedisLock do
     expect(subject.locked?).to eq false
   end
 
+  describe "class helpers" do
+    it "semaphore" do
+      hello = 1
+      before_t = Time.now.to_i
+      after_t = Time.now.to_i
+      described_class.semaphore("hello_semaphore") do
+        after_t = Time.now.to_i
+        hello = 2
+      end
+      expect(hello).to eq(2)
+      expect(after_t - before_t).to eq(0)
+    end
+  end
+
+  describe 'semaphore' do
+    it "waits until lock is released to perform de block" do
+      lock = described_class.new('semaphore_key')
+      hello = 1
+      before_t = Time.now.to_i
+      lock.set(2)
+      after_t = Time.now.to_i
+      lock.semaphore do
+        after_t = Time.now.to_i
+        hello = 2
+      end
+      expect(hello).to eq(2)
+      expect(after_t - before_t).to eq(3)
+    end
+
+    it "long time waiting" do
+      lock = described_class.new('semaphore_key')
+      hello = 1
+      before_t = Time.now.to_i
+      lock.set(10)
+      after_t = Time.now.to_i
+      lock.semaphore do
+        after_t = Time.now.to_i
+        hello = 2
+      end
+      expect(hello).to eq(2)
+      expect(after_t - before_t).to eq(12)
+    end
+  end
+
   describe 'if_open' do
     it 'executes the block when no lock is set' do
       out = subject.if_open do |lock|

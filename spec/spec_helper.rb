@@ -20,6 +20,7 @@
 require 'redis_lock'
 require 'dystruct'
 require 'mock_redis'
+require 'pry'
 
 RedisLock.setup do |config|
   config.redis = -> { MockRedis.new }
