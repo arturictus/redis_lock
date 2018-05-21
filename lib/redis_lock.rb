@@ -1,6 +1,5 @@
 require 'redis'
 require "redis_lock/version"
-require "redis_lock/configuration"
 
 class RedisLock
   attr_reader :key
@@ -14,15 +13,15 @@ class RedisLock
   end
 
   def self.semaphore(key, args = {}, &block)
-    setup_instance(key, args).semaphore(args, &block)
+    new(key, instance_args(args)).semaphore(args, &block)
   end
 
   def self.if_open(key, args = {}, &block)
-    setup_instance(key, args).if_open(args, &block)
+    new(key, instance_args(args)).if_open(args, &block)
   end
 
   def self.if_locked(key, args = {}, &block)
-    setup_instance(key, args).if_locked(args, &block)
+    new(key, instance_args(args)).if_locked(args, &block)
   end
 
   def config; self.class.config; end
@@ -52,26 +51,16 @@ class RedisLock
   end
 
   def semaphore(args = {}, &block)
-    ttl = args[:ttl] || config.default_ttl
-    set_opts = args[:set_opts] || {}
-    while locked?
-      sleep (args[:wait] || 3)
-    end
-    set(ttl, set_opts)
-    out = _perform(&block)
-    unlock!
-    out
+    Semaphore.new(self, args).call(&block)
   end
 
   def if_open(args = {}, &block)
-    return if locked?
-    _perform(&block)
+    IfOpen.new(self, args).call(&block)
   end
   alias_method :perform, :if_open
 
   def if_locked(args = {}, &block)
-    return if open?
-    _perform(&block)
+    IfLocked.new(self, args).call(&block)
   end
 
   def locked?
@@ -100,18 +89,18 @@ class RedisLock
     redis.get(key)
   end
 
-  private
-
-  def self.setup_instance(key, args)
-    inst_opts = { redis: args.delete(:redis) }.reject{ |_, v| v.nil? }
-    new(key, inst_opts)
+  def self.instance_args(args)
+    allowed = [:redis]
+    args.select { |k, _v| allowed.include?(k) }.compact
   end
 
-  def _perform(&block)
-    yield self
-  rescue => e
-    config.logger.error "[#{self.class}] key: `#{key}` error:"
-    config.logger.error e
-    raise e
-  end
+  # def self.setup_instance(key, args)
+  #   inst_opts = { redis: args.delete(:redis) }.reject{ |_, v| v.nil? }
+  #   new(key, inst_opts)
+  # end
 end
+require "redis_lock/configuration"
+require "redis_lock/semaphore"
+require "redis_lock/if_open"
+require "redis_lock/if_locked"
+require "redis_lock/multi_lock"
