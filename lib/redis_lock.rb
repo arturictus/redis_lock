@@ -53,17 +53,17 @@ class RedisLock
     redis.set(key, value, args.merge(opts)) == "OK" ? true : false
   end
 
-  def semaphore(args = {}, &block)
-    Semaphore.new(self, args).call(&block)
+  def semaphore(opts = {}, &block)
+    Semaphore.new(self, opts).call(&block)
   end
 
-  def if_open(args = {}, &block)
-    IfOpen.new(self, args).call(&block)
+  def if_open(opts = {}, &block)
+    IfOpen.new(self, opts).call(&block)
   end
   alias_method :perform, :if_open
 
-  def if_locked(args = {}, &block)
-    IfLocked.new(self, args).call(&block)
+  def if_locked(opts = {}, &block)
+    IfLocked.new(self, opts).call(&block)
   end
 
   def locked?
