@@ -101,6 +101,27 @@ out #=> :hello
 RedisLock.new('my_key').locked? #=> false
 ```
 
+
+__multi_semaphore:__
+Very useful when you are changing multiple objects and want to protect them
+in a distributed system
+
+```ruby
+lock_1 = RedisLock.new('my_key')
+lock_2 = RedisLock.new('another_key')
+
+out = RedisLock.semaphore('my_key', 'another_key') do |multi_lock|
+        multi_lock.locked? #=> true
+        lock_1.locked? #=> true
+        lock_2.locked? #=> true
+        sleep 3 # Do something
+        :hello
+      end
+out #=> :hello
+lock_1.locked? #=> false
+lock_2.locked? #=> false
+```
+
 __if_open:__
 
 **Use case:**
