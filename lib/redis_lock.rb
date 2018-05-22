@@ -13,16 +13,18 @@ class RedisLock
   end
 
   def self.semaphore(*args, &block)
-    opts = args.last.is_a?(::Hash) ? args.pop : {}
+    opts = extract_options!(args)
     Semaphore.new(MultiLock.new(*args, opts), opts).call(&block)
   end
 
-  def self.if_open(key, opts = {}, &block)
-    new(key, opts).if_open(opts, &block)
+  def self.if_open(*args, &block)
+    opts = extract_options!(args)
+    IfOpen.new(MultiLock.new(*args, opts), opts).call(&block)
   end
 
-  def self.if_locked(key, opts = {}, &block)
-    new(key, opts).if_locked(opts, &block)
+  def self.if_locked(*args, &block)
+    opts = extract_options!(args)
+    IfLocked.new(MultiLock.new(*args, opts), opts).call(&block)
   end
 
   def config; self.class.config; end
@@ -88,6 +90,10 @@ class RedisLock
 
   def value
     redis.get(key)
+  end
+
+  def self.extract_options!(args)
+    args.last.is_a?(::Hash) ? args.pop : {}
   end
 end
 
