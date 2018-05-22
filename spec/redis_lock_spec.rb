@@ -63,7 +63,7 @@ describe RedisLock do
       l_2 = RedisLock.new('another_key', redis: redis)
       after_t = Time.now.to_i
       l_1.set(2)
-      out = described_class.multi_semaphore('semaphore_key', 'another_key', redis: redis) do
+      out = described_class.semaphore('semaphore_key', 'another_key', redis: redis) do
               expect(l_1.locked?).to be true
               expect(l_2.locked?).to be true
               after_t = Time.now.to_i

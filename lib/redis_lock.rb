@@ -12,11 +12,7 @@ class RedisLock
     yield config
   end
 
-  def self.semaphore(key, args = {}, &block)
-    new(key, instance_args(args)).semaphore(args, &block)
-  end
-
-  def self.multi_semaphore(*args, &block)
+  def self.semaphore(*args, &block)
     opts = args.last.is_a?(::Hash) ? args.pop : {}
     Semaphore.new(MultiLock.new(*args, opts), opts).call(&block)
   end

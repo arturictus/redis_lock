@@ -1,19 +1,18 @@
 class RedisLock
   class MultiLock
     extend Forwardable
-    attr_reader :keys, :args, :locks, :opts
+    attr_reader :keys, :locks, :opts
     def_delegators :locks, :any?, :all?, :each, :map
 
     def initialize(*args)
-      @args = args.dup
-      @opts = extract_options!
+      @opts = extract_options!(args)
       @keys = args
       @locks = @keys.map do |k|
                  RedisLock.new(k, @opts)
                end
     end
 
-    def extract_options!
+    def extract_options!(args)
       args.last.is_a?(::Hash) ? args.pop : {}
     end
 
