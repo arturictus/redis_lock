@@ -1,7 +1,7 @@
 class RedisLock
   class IfOpen < Semaphore
     def call(&block)
-      return if lock.locked?
+      return :locked if lock.locked?
       _perform(&block)
     end
   end

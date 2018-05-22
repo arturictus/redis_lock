@@ -38,7 +38,7 @@ describe RedisLock do
         hello = 2
       end
       expect(hello).to eq(2)
-      expect(after_t - before_t).to eq(3)
+      expect(after_t - before_t).to eq(2)
     end
 
     it "long time waiting" do
@@ -52,7 +52,29 @@ describe RedisLock do
         hello = 2
       end
       expect(hello).to eq(2)
-      expect(after_t - before_t).to eq(12)
+      expect(after_t - before_t).to be_between(9, 11) #expected 10
+    end
+  end
+  describe '::multi_semaphore' do
+    it "waits until lock is released to perform de block" do
+      hello = 1
+      before_t = Time.now.to_i
+      l_1 = RedisLock.new('semaphore_key', redis: redis)
+      l_2 = RedisLock.new('another_key', redis: redis)
+      after_t = Time.now.to_i
+      l_1.set(2)
+      out = described_class.multi_semaphore('semaphore_key', 'another_key', redis: redis) do
+              expect(l_1.locked?).to be true
+              expect(l_2.locked?).to be true
+              after_t = Time.now.to_i
+              hello = 2
+              'hello'
+            end
+      expect(l_1.locked?).to be false
+      expect(l_2.locked?).to be false
+      expect(out).to eq('hello')
+      expect(hello).to eq(2)
+      expect(after_t - before_t).to eq(2)
     end
   end
 
@@ -82,7 +104,7 @@ describe RedisLock do
       out = subject.if_open do
               hello.hello
             end
-      expect(out).to be nil
+      expect(out).to be :locked
       expect(subject.locked?).to be true
       subject.remove
     end
@@ -102,6 +124,7 @@ describe RedisLock do
       spec.run
       subject.remove
     end
+
     it 'executes the block when is locked' do
       out = subject.if_locked do |lock|
               subject.locked?

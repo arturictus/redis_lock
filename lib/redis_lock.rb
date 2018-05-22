@@ -16,6 +16,11 @@ class RedisLock
     new(key, instance_args(args)).semaphore(args, &block)
   end
 
+  def self.multi_semaphore(*args, &block)
+    opts = args.last.is_a?(::Hash) ? args.pop : {}
+    Semaphore.new(MultiLock.new(*args, opts), opts).call(&block)
+  end
+
   def self.if_open(key, args = {}, &block)
     new(key, instance_args(args)).if_open(args, &block)
   end
@@ -91,13 +96,8 @@ class RedisLock
 
   def self.instance_args(args)
     allowed = [:redis]
-    args.select { |k, _v| allowed.include?(k) }.compact
+    args.select { |k, _v| allowed.include?(k) }.reject{ |_, v| v.nil? }
   end
-
-  # def self.setup_instance(key, args)
-  #   inst_opts = { redis: args.delete(:redis) }.reject{ |_, v| v.nil? }
-  #   new(key, inst_opts)
-  # end
 end
 require "redis_lock/configuration"
 require "redis_lock/semaphore"

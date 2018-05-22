@@ -1,10 +1,11 @@
 class RedisLock
   class MultiLock
     extend Forwardable
-    attr_reader :keys, :args, :locks
-    def_delegators [:any?, :all?, :each] => :locks
+    attr_reader :keys, :args, :locks, :opts
+    def_delegators :locks, :any?, :all?, :each, :map
+
     def initialize(*args)
-      @args = args
+      @args = args.dup
       @opts = extract_options!
       @keys = args
       @locks = @keys.map do |k|
@@ -17,19 +18,29 @@ class RedisLock
     end
 
     def set(ttl, opts = {})
-      each { |l| l.set(ttl, opts) }
+      map { |l| l.set(ttl, opts) }.all?{ |e| e === true }
     end
 
     def config
       RedisLock.config
     end
 
-    def unlock!
-      each(&:unlock!)
+    def delete
+      map(&:delete).all?{ |e| e === true }
     end
+    alias_method :unlock!, :delete
+    alias_method :open!, :delete
+    alias_method :remove, :delete
+
+    def open?
+      all?(&:open?)
+    end
+    alias_method :unlocked?, :open?
 
     def locked?
       any?(&:locked?)
     end
+    alias_method :exists?, :locked?
+    alias_method :in_use?, :locked?
   end
 end
