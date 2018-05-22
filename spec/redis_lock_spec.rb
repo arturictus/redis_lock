@@ -38,7 +38,7 @@ describe RedisLock do
         hello = 2
       end
       expect(hello).to eq(2)
-      expect(after_t - before_t).to eq(2)
+      expect(after_t - before_t).to be_between(1, 3) # expected 2
     end
 
     it "long time waiting" do
@@ -74,7 +74,7 @@ describe RedisLock do
       expect(l_2.locked?).to be false
       expect(out).to eq('hello')
       expect(hello).to eq(2)
-      expect(after_t - before_t).to eq(2)
+      expect(after_t - before_t).to be_between(1, 3) # expected 2
     end
   end
 

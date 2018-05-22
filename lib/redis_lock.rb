@@ -17,12 +17,12 @@ class RedisLock
     Semaphore.new(MultiLock.new(*args, opts), opts).call(&block)
   end
 
-  def self.if_open(key, args = {}, &block)
-    new(key, instance_args(args)).if_open(args, &block)
+  def self.if_open(key, opts = {}, &block)
+    new(key, opts).if_open(opts, &block)
   end
 
-  def self.if_locked(key, args = {}, &block)
-    new(key, instance_args(args)).if_locked(args, &block)
+  def self.if_locked(key, opts = {}, &block)
+    new(key, opts).if_locked(opts, &block)
   end
 
   def config; self.class.config; end
@@ -89,12 +89,8 @@ class RedisLock
   def value
     redis.get(key)
   end
-
-  def self.instance_args(args)
-    allowed = [:redis]
-    args.select { |k, _v| allowed.include?(k) }.reject{ |_, v| v.nil? }
-  end
 end
+
 require "redis_lock/configuration"
 require "redis_lock/semaphore"
 require "redis_lock/if_open"
