@@ -24,8 +24,8 @@ class RedisLock
     def _perform(&block)
       yield lock
     rescue => e
-      config.logger.error "[#{self.class}] key: `#{key}` error:"
-      config.logger.error e
+      lock.config.logger.error "[#{self.class}] key: `#{key}` error:"
+      lock.config.logger.error e
       raise e
     end
   end
