@@ -55,6 +55,7 @@ describe RedisLock do
       expect(after_t - before_t).to be_between(9, 11) #expected 10
     end
   end
+
   describe '::multi_semaphore' do
     it "waits until lock is released to perform de block" do
       hello = 1

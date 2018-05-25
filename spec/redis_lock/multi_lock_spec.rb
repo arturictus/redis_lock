@@ -17,6 +17,7 @@ describe RedisLock::MultiLock do
     expect(subject.keys).to eq ['foo', 'bar']
     expect(subject.locks.count).to be 2
     expect(subject.opts).to eq({ foo: 'bar', redis: redis })
+    expect(subject.key).to eq("REDISLOCK::foo, REDISLOCK::bar")
 
     other = described_class.new('foo', 'bar')
     expect(other.keys).to eq ['foo', 'bar']

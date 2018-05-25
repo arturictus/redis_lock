@@ -36,6 +36,10 @@ class RedisLock
     end
     alias_method :unlocked?, :open?
 
+    def key
+      map(&:key).join(', ')
+    end
+
     def locked?
       any?(&:locked?)
     end
