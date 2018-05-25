@@ -1,11 +1,5 @@
 class RedisLock
-  class Semaphore
-    attr_reader :lock, :args
-
-    def initialize(lock, args = {})
-      @lock = lock
-      @args = args
-    end
+  class Semaphore < Strategy
 
     def call(&block)
       ttl = args[:ttl] || lock.config.default_ttl
@@ -14,19 +8,11 @@ class RedisLock
         sleep (args[:wait] || 1)
       end
       lock.set(ttl, set_opts)
-      out = _perform(&block)
-      lock.unlock!
-      out
+      _perform(&block)
     end
 
-    private
-
-    def _perform(&block)
-      yield lock
-    rescue => e
-      lock.config.logger.error "[#{self.class}] key: `#{key}` error:"
-      lock.config.logger.error e
-      raise e
+    def after_perform
+      lock.unlock!
     end
   end
 end

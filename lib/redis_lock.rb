@@ -98,6 +98,7 @@ class RedisLock
 end
 
 require "redis_lock/configuration"
+require "redis_lock/strategy"
 require "redis_lock/semaphore"
 require "redis_lock/if_open"
 require "redis_lock/if_locked"
