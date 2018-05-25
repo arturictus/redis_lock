@@ -58,9 +58,7 @@ class RedisLock
       sleep (args[:wait] || 3)
     end
     set(ttl, set_opts)
-    out = _perform(&block)
-    unlock!
-    out
+    _semaphore_perform(&block)
   end
 
   def if_open(args = {}, &block)
@@ -105,6 +103,16 @@ class RedisLock
   def self.setup_instance(key, args)
     inst_opts = { redis: args.delete(:redis) }.reject{ |_, v| v.nil? }
     new(key, inst_opts)
+  end
+
+  def _semaphore_perform(&block)
+    yield self
+  rescue => e
+    config.logger.error "[#{self.class}] key: `#{key}` error:"
+    config.logger.error e
+    raise e
+  ensure
+    unlock!
   end
 
   def _perform(&block)
