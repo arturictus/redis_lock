@@ -88,7 +88,7 @@ args:
   - key [string]
   - opts: `{}`
     * :redis
-    * :ttl, time to leave
+    * :ttl, time to live
     * :set_opts, check `set` documentation
     * :wait, time waiting for the next check if the lock is in use
 
