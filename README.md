@@ -129,7 +129,7 @@ Send email to user. The User should receive only 1 email per day
 
 ```ruby
 ttl = (24 * 3600) # one day
-RedisLock.if_open("User:1-sales-products", ttl: ttl) do |l|
+RedisLock.if_open("User:1-sales-products") do |l|
   # Send Email
   l.set(ttl)
 end
