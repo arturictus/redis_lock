@@ -11,6 +11,13 @@ class RedisLock
       raise NotImplementedError
     end
 
+    def lock_for(ttl, &block)
+      call do
+        block.call(lock)
+        lock.set(ttl)
+      end
+    end
+
     def after_perform
     end
 

@@ -19,7 +19,8 @@ class RedisLock
 
   def self.if_open(*args, &block)
     opts = extract_options!(args)
-    IfOpen.new(MultiLock.new(*args, opts), opts).call(&block)
+    inst = IfOpen.new(MultiLock.new(*args, opts), opts)
+    block ? inst.call(&block) : inst
   end
 
   def self.if_locked(*args, &block)
