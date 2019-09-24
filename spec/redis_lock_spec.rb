@@ -118,6 +118,16 @@ describe RedisLock do
       expect(out).to eq :hello
       expect(subject.locked?).to be false
     end
+
+    it "when bo block is " do
+      hello = Dystruct.new(hello: :hello)
+      expect(hello).to receive(:hello).once.and_call_original
+      out = subject.if_open.block_for(4) do
+              hello.hello
+            end
+      expect(out).to eq :hello
+      expect(subject.locked?).to be true
+    end
   end
   describe 'if_locked' do
     around do |spec|
