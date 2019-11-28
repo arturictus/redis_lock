@@ -1,3 +1,5 @@
+require "forwardable"
+
 class RedisLock
   class MultiLock
     extend Forwardable
